@@ -1,0 +1,64 @@
+#!/usr/bin/python
+
+import json
+import requests
+import sys
+
+
+help_msg = '''Plague, CLI COVID-19 infection tracking tool
+Usage:
+    plague [country]
+    plague             - Shows world wide data
+    plague myanmar     - Shows Myanmar country's data'''
+
+
+url = 'https://corona.lmao.ninja'
+
+
+argc = len(sys.argv)
+if argc > 1:
+    if sys.argv[1] == '--help':
+        print(help_msg)
+        exit()
+    else:
+        country = sys.argv[1]
+else:
+    country = 'world'
+
+if country == 'world':
+    url += '/all'
+else:
+    url = url + '/countries/' + country
+
+
+try:
+    content = requests.get(url, timeout=5.00)
+    data = json.loads(content.text)
+    
+    if country == 'world':
+        country = 'World Wide'
+    else:
+        country = data['country']
+    
+    cases = int(data['cases'])
+    deaths = int(data['deaths'])
+    recovered = int(data['recovered'])
+    
+    deaths_txt = ''
+    if deaths != 0:
+        deaths_txt = '%d (%.2f' % (deaths, 100.0*deaths/cases) + '%)'
+    else:
+        deaths_txt = '0'
+    
+    recovered_txt = ''
+    if recovered != 0:
+        recovered_txt = '%d (%.2f' % (recovered, 100.0*recovered/cases) + '%)'
+    else:
+        recovered_txt = '0'
+    
+    print('\033[0;2mTrack the Coronavirus disease (COVID-19).\033[0m')
+    print(u'\033[0;1;35m{0}\033[0m  \U0001f637  {1}  \U0001f480  {2}  \U0001f489  {3}'.format(country, cases, deaths_txt, recovered_txt))
+    
+except Exception as e:
+    print(str(e))
+
